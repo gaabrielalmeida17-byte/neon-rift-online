@@ -50,12 +50,19 @@ function roomPlayers(room) {
 }
 
 function send(ws, obj) {
-  if (ws.readyState === 1) ws.send(JSON.stringify(obj));
+  if (!ws || ws.readyState !== 1) return false;
+  try {
+    ws.send(JSON.stringify(obj));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function broadcast(room, obj, except) {
-  for (const c of room.clients) {
-    if (c.ws !== except && c.ws.readyState === 1) send(c.ws, obj);
+  for (const c of room.clients.values()) {
+    if (!c || !c.ws || c.ws === except) continue;
+    send(c.ws, obj);
   }
 }
 
@@ -247,7 +254,7 @@ wss.on('connection', ws => {
 
 const heartbeat = setInterval(() => {
   for (const c of clients.values()) {
-    if (c.ws.readyState !== 1) continue;
+    if (!c || !c.ws || c.ws.readyState !== 1) continue;
     try {
       c.ws.ping();
     } catch {}
