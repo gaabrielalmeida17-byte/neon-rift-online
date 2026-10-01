@@ -1,0 +1,13 @@
+{
+  "name": "neon-rift-online-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor WebSocket do Neon Rift Arcade",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
+  }
+}

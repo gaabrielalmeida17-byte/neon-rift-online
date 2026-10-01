@@ -1,0 +1,34 @@
+NEON RIFT — ONLINE
+
+O HTML já contém o cliente online. Este pacote adiciona o servidor WebSocket que faltava.
+
+1) Instale Node.js 18+.
+2) Abra um terminal nesta pasta.
+3) Rode:
+   npm install
+   npm start
+4) Abra no navegador:
+   http://localhost:8080
+
+Para dois aparelhos na MESMA rede Wi-Fi:
+- Descubra o IP do computador que está rodando o servidor (ex.: 192.168.1.10).
+- No segundo aparelho, abra:
+  http://192.168.1.10:8080
+- Se o HTML for aberto diretamente como arquivo, use ONLINE > CONFIGURAR SERVIDOR e informe:
+  ws://IP_DO_PC:8080
+
+Para jogar pela INTERNET:
+- Publique esta pasta em um serviço que aceite Node.js/WebSocket.
+- Use HTTPS no site e WSS no WebSocket quando o provedor exigir.
+- No jogo, ONLINE > CONFIGURAR SERVIDOR pode receber o endereço wss://...
+
+O servidor limita cada sala a 2 pilotos e mantém:
+- criação/entrada por código;
+- presença;
+- host;
+- início sincronizado da partida;
+- posição/estado do piloto;
+- tiros do outro piloto;
+- saída/desconexão e limpeza da sala.
+
+Observação: a simulação de inimigos continua local em cada aparelho; o servidor não é autoritativo para o estado dos inimigos.
