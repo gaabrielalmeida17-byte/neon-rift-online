@@ -32,11 +32,3 @@ O servidor limita cada sala a 2 pilotos e mantém:
 - saída/desconexão e limpeza da sala.
 
 Observação: a simulação de inimigos continua local em cada aparelho; o servidor não é autoritativo para o estado dos inimigos.
-
-
-CORREÇÃO ONLINE:
-- Quando o jogo é aberto pelo próprio servidor HTTPS do Render, o cliente usa automaticamente o mesmo domínio para o WebSocket (WSS).
-- Isso evita depender de um hostname antigo salvo no código.
-- O servidor também possui /health para verificar se o serviço está ativo.
-- Depois de atualizar o serviço no Render, abra o jogo pelo endereço HTTPS do próprio serviço e use ONLINE > CRIAR SALA.
-- No outro celular, abra o mesmo endereço HTTPS, escolha ONLINE > ENTRAR COM CÓDIGO e informe o código da sala.

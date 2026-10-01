@@ -105,22 +105,6 @@ function joinRoom(c, code) {
 
 const server = http.createServer((req, res) => {
   const pathname = new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname;
-  if (pathname === '/health') {
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'no-store',
-      'Access-Control-Allow-Origin': '*'
-    });
-    res.end(JSON.stringify({
-      ok: true,
-      service: 'neon-rift-online',
-      clients: clients.size,
-      rooms: rooms.size,
-      time: new Date().toISOString()
-    }));
-    return;
-  }
-
   if (pathname === '/' || pathname === '/index.html' || pathname === '/neon-rift-online.html') {
     fs.readFile(GAME_FILE, (err, data) => {
       if (err) {
@@ -279,6 +263,6 @@ process.on('SIGINT', () => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Neon Rift Online HTTP: listening on ${HOST}:${PORT}`);
-  console.log(`WebSocket: same origin (${process.env.RENDER_EXTERNAL_URL ? process.env.RENDER_EXTERNAL_URL.replace(/^http/i, 'ws') : 'ws://localhost:'+PORT})`);
+  console.log(`Neon Rift Online: http://localhost:${PORT}`);
+  console.log(`WebSocket: ws://localhost:${PORT}`);
 });
