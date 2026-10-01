@@ -107,8 +107,20 @@ function joinRoom(c, code) {
   c.name = cleanName(c.name);
   room.clients.set(c.id, c);
 
-  send(c.ws, { type: 'roomJoined', code, role: 'guest', id: c.id, players: roomPlayers(room) });
-  broadcast(room, { type: 'players', players: roomPlayers(room) }, null);
+  const players = roomPlayers(room);
+
+  // Confirma a entrada para o convidado.
+  send(c.ws, { type: 'roomJoined', code, role: 'guest', id: c.id, players });
+
+  // Confirma também para o host. Isso força os dois clientes a
+  // reconstruírem a lista da sala com os 2 pilotos imediatamente.
+  for (const peer of room.clients.values()) {
+    if (!peer || !peer.ws) continue;
+    send(peer.ws, {
+      type: 'players',
+      players
+    });
+  }
 }
 
 const server = http.createServer((req, res) => {
