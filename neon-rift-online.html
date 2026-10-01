@@ -254,8 +254,22 @@ function onlineToast(msg,ms=1800){const el=$('onlineToast');if(!el)return;el.tex
 const DEFAULT_ONLINE_SERVER='wss://neon-rift-online-3wfd.onrender.com';function onlineServerUrl(){const saved=String(localStorage.nrOnlineServer||'').trim();if(saved && !/^(wss?:\/\/)(localhost|127\.0\.0\.1)(:\d+)?$/i.test(saved))return saved;return DEFAULT_ONLINE_SERVER}
 function onlineDisconnect(){try{if(onlineSocket)onlineSocket.close()}catch(e){}onlineSocket=null;onlineRoom='';onlineRole='';onlineSelfId='';onlineReady=false;onlinePlayers={};onlineRemoteBullets=[];onlineMode=false}
 function onlineSend(obj){if(onlineSocket&&onlineSocket.readyState===1)onlineSocket.send(JSON.stringify(obj))}
-let onlineReconnectTimer=0,onlineAutoConnecting=false;
-function onlineConnect(cb){if(onlineSocket&&(onlineSocket.readyState===0||onlineSocket.readyState===1)){if(onlineSocket.readyState===1)cb&&cb();return}const url=onlineServerUrl();if(!url){onlineAutoConnecting=false;onlineToast('SERVIDOR ONLINE AINDA NÃO CONFIGURADO');return}onlineAutoConnecting=true;try{onlineSocket=new WebSocket(url)}catch(e){onlineAutoConnecting=false;onlineToast('SERVIDOR ONLINE INVÁLIDO');return}onlineSocket.onopen=()=>{onlineReady=true;onlineAutoConnecting=false;onlineSend({type:'hello',name:onlineName});cb&&cb();if(state==='menu')setTimeout(()=>onlineRenderPanel(),0)};onlineSocket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}onlineHandle(m)};onlineSocket.onerror=()=>{onlineAutoConnecting=false;if(state==='menu')onlineToast('SERVIDOR ONLINE OFFLINE')};onlineSocket.onclose=()=>{const wasOnline=onlineMode;onlineReady=false;onlinePlayers={};onlineRemoteBullets=[];onlineSocket=null;onlineAutoConnecting=false;if(wasOnline)onlineToast('CONEXÃO ONLINE ENCERRADA');if(state==='menu'&&onlineReconnectTimer===0){onlineReconnectTimer=setTimeout(()=>{onlineReconnectTimer=0;if(state==='menu')onlineConnect()},3500)}}}
+let onlineReconnectTimer=0,onlineAutoConnecting=false,onlineConnectWaiters=[];
+function onlineConnect(cb){
+ if(typeof cb==='function')onlineConnectWaiters.push(cb);
+ if(onlineSocket&&(onlineSocket.readyState===0||onlineSocket.readyState===1)){
+  if(onlineSocket.readyState===1){const q=onlineConnectWaiters.splice(0);q.forEach(fn=>{try{fn()}catch(e){}})}
+  return;
+ }
+ const url=onlineServerUrl();
+ if(!url){onlineAutoConnecting=false;const q=onlineConnectWaiters.splice(0);q.forEach(fn=>{try{fn()}catch(e){}});onlineToast('SERVIDOR ONLINE AINDA NÃO CONFIGURADO');return}
+ onlineAutoConnecting=true;
+ try{onlineSocket=new WebSocket(url)}catch(e){onlineAutoConnecting=false;onlineSocket=null;onlineToast('SERVIDOR ONLINE INVÁLIDO');return}
+ onlineSocket.onopen=()=>{onlineReady=true;onlineAutoConnecting=false;onlineSend({type:'hello',name:onlineName});const q=onlineConnectWaiters.splice(0);q.forEach(fn=>{try{fn()}catch(e){}});if(state==='menu')setTimeout(()=>onlineRenderPanel(),0)};
+ onlineSocket.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}onlineHandle(m)};
+ onlineSocket.onerror=()=>{onlineAutoConnecting=false;if(state==='menu')onlineToast('SERVIDOR ONLINE OFFLINE')};
+ onlineSocket.onclose=()=>{const wasOnline=onlineMode;onlineReady=false;onlinePlayers={};onlineRemoteBullets=[];onlineSocket=null;onlineAutoConnecting=false;onlineConnectWaiters=[];if(wasOnline)onlineToast('CONEXÃO ONLINE ENCERRADA');if(state==='menu'&&onlineReconnectTimer===0){onlineReconnectTimer=setTimeout(()=>{onlineReconnectTimer=0;if(state==='menu')onlineConnect()},3500)}}
+}
 function onlineAutoConnect(){if(onlineReady||onlineAutoConnecting)return;const url=onlineServerUrl();if(!url)return;onlineConnect()}
 function onlineHandle(m){
  if(m.type==='roomCreated'||m.type==='roomJoined'){onlineRoom=m.code;onlineRole=m.role||'';onlineSelfId=m.id||'';onlinePlayers=m.players||{};renderMenu('online');onlineToast(m.type==='roomCreated'?'SALA CRIADA: '+m.code:'ENTROU NA SALA '+m.code,2200);return}
