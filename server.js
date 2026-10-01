@@ -45,7 +45,7 @@ function publicPlayer(c) {
 
 function roomPlayers(room) {
   const out = {};
-  for (const c of room.clients) out[c.id] = publicPlayer(c);
+  for (const c of room.clients.values()) out[c.id] = publicPlayer(c);
   return out;
 }
 
@@ -60,6 +60,7 @@ function send(ws, obj) {
 }
 
 function broadcast(room, obj, except) {
+  if (!room || !room.clients) return;
   for (const c of room.clients.values()) {
     if (!c || !c.ws || c.ws === except) continue;
     send(c.ws, obj);
@@ -254,7 +255,7 @@ wss.on('connection', ws => {
 
 const heartbeat = setInterval(() => {
   for (const c of clients.values()) {
-    if (!c || !c.ws || c.ws.readyState !== 1) continue;
+    if (!c.ws || c.ws.readyState !== 1) continue;
     try {
       c.ws.ping();
     } catch {}
